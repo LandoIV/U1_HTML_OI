@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportClub - Dashboard Usuario</title>
+    <link rel="stylesheet" href="colorUsuario.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-contenido">
+            <div class="logo-container">
+                <img src="../imagenes/logo_empresa_letra_v1.png" alt="Logo SportClub" class="logo">
+                <div class="titulo-header">
+                    <h1>Panel del Usuario</h1>
+                    <p>Gestiona tus reservas y tu información personal</p>
+                </div>
+            </div>
+            <div class="acciones">
+                <button class="btn-editar">Editar Perfil</button>
+                <a href="../Login/index.html">
+                    <button class="btn-cerrar">Cerrar Sesión</button>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVEGACIÓN -->
+    <nav class="nav">
+        <ul class="nav-list">
+            <li><a href="#" class="activo">🏠 Inicio</a></li>
+            <li><a href="#">📅 Reservas</a></li>
+            <li><a href="#">👤 Perfil</a></li>
+        </ul>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="container">
+        <!-- BIENVENIDA -->
+        <section class="bienvenida">
+            <h2>¡Bienvenido, Usuario!</h2>
+            <p>
+                En <strong>SportClub</strong>, tu bienestar es nuestra prioridad. 
+                Aquí puedes gestionar tus reservas y explorar nuevas clases para seguir construyendo tu mejor versión.
+            </p>
+        </section>
+
+        <div class="cards-container">
+            <!-- INFORMACIÓN DEL USUARIO -->
+            <section class="card">
+                <h3>👤 Información Personal</h3>
+                <p><strong>Nombre:</strong> Ana Martínez</p>
+                <p><strong>Correo:</strong> ana.martinez@email.com</p>
+                <p><strong>Interés:</strong> Entrenamiento Funcional</p>
+            </section>
+
+            <!-- RESERVAS -->
+            <section class="card">
+                <h3>📅 Mis Reservas</h3>
+                <ul>
+                    <li>Clase de Crossfit – Lunes 18:00</li>
+                    <li>Yoga – Miércoles 19:00</li>
+                    <li>Spinning – Viernes 17:00</li>
+                </ul>
+            </section>
+
+            <!-- CLASES DISPONIBLES -->
+            <section class="card">
+                <h3>🏋️ Clases Disponibles</h3>
+                <ul>
+                    <li>Yoga</li>
+                    <li>Entrenamiento Funcional</li>
+                    <li>Spinning</li>
+                    <li>Pilates</li>
+                </ul>
+            </section>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>&copy; 2026 SportClub – Tu mejor versión comienza hoy.</p>
+    </footer>
+
+</body>
+</html>
