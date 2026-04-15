@@ -16,7 +16,7 @@
     <div class="login-container">
         <div class="login-box">
             <!-- Logo -->
-            <img src="./imagenes/logo_empresa_letra_v1.png" alt="Logo SportClub" class="logo">
+            <img src="./logo_empresa_letra_v1.png" alt="Logo SportClub" class="logo">
 
             <!-- Título -->
             <h1>SportClub</h1>
@@ -43,8 +43,8 @@
 
             <!-- Enlaces adicionales -->
             <div class="links">
-                <a href="../PaginaRecover/Recover.html">¿Olvidaste tu contraseña?</a>
-                <a href="../Registro/registro.html">Crear una cuenta</a>
+                <a href="../Recover.html">¿Olvidaste tu contraseña?</a>
+                <a href="../registro.html">Crear una cuenta</a>
             </div>
         </div>
     </div>
@@ -57,7 +57,7 @@
             const email = document.getElementById("email").value;
             localStorage.setItem("email", email);
             localStorage.setItem("rol", "usuario");
-            window.location.href = "dashboard_usuario.html";
+            window.location.href = "InterfazUsuario.html";
         });
 
         // Acceso rápido según perfil
@@ -67,11 +67,11 @@
             localStorage.setItem("rol", rol);
 
             if (rol === "usuario") {
-                window.location.href = "../Usuario/InterfazUsuario.html";
+                window.location.href = "../InterfazUsuario.html";
             } else if (rol === "coach") {
-                window.location.href = "../Coach/InterfazCoach.html";
+                window.location.href = "../InterfazCoach.html";
             } else if (rol === "admin") {
-                window.location.href = "../Admin/InterfazAdmin.html";
+                window.location.href = "../InterfazAdmin.html";
             }
         }
     </script>
