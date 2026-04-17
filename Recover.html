@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportClub - Recuperar Contraseña</title>
+    <link rel="stylesheet" href="Recover.css">
+
+    <style>
+        .mensaje-confirmacion {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #d1fae5;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .mensaje-visible {
+            display: block;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="caja">
+        <img id="imagen-logo" src="./logo_empresa_letra_v1.png" alt="SportClub">
+        
+        <h3>Recuperar Acceso</h3>
+        <p style="font-size: 13px; color: #ccc; margin-bottom: 20px; text-align: center;">
+            Introduce tu correo para enviarte las instrucciones.
+        </p>
+
+        <div id="mensaje" class="mensaje-confirmacion">
+            Se ha enviado un enlace de recuperación a su correo.
+        </div>
+        
+        <label>Correo Electrónico</label>
+        <input type="email" placeholder="ejemplo@correo.com">
+        
+        <button id="boton-inicio">ENVIAR ENLACE</button>
+        
+        <div class="links" style="justify-content: center;">
+            <a href="./index.html">Volver al Login</a>
+        </div>
+    </div>
+
+    <script>
+        const boton = document.getElementById("boton-inicio");
+        const mensaje = document.getElementById("mensaje");
+
+        boton.addEventListener("click", function() {
+            mensaje.classList.add("mensaje-visible");
+        });
+    </script>
+
+</body>
+</html>
