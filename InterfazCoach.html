@@ -19,8 +19,8 @@
                 </div>
             </div>
             <div class="acciones">
-                <button class="btn-editar">Editar Perfil</button>
-                <a href="./index.html" class="btn-cerrar">Cerrar Sesión</a>
+                <a href="./InterfazUsuario.html" class="btn-editar">Editar Perfil</a>
+                <a href="./index.html" class="btn-cerrar" onclick="cerrarSesion()">Cerrar Sesión</a>
             </div>
         </div>
     </header>
@@ -37,40 +37,26 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="container">
         <section class="bienvenida">
-            <h2>¡Bienvenido, Coach!</h2>
-            <p>En <strong>SportClub</strong> acompañamos a cada persona en su proceso de superación. 
+            <h2 id="saludoCoach">¡Bienvenido, Coach!</h2>
+            <p>En <strong>SportClub</strong> acompañamos a cada persona en su proceso de superación.
                Tu liderazgo es clave para inspirar y transformar vidas a través del deporte.</p>
         </section>
 
         <div class="cards-container">
-            <!-- LISTA DE ALUMNOS -->
+            <!-- LISTA DE ALUMNOS (usuarios con rol user desde la API) -->
             <section class="card">
                 <h3>👥 Lista de Alumnos</h3>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Correo</th>
-                        </tr>
+                        <tr><th>Nombre</th><th>Correo</th></tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>Juan Pérez</td>
-                            <td>juan.perez@email.com</td>
-                        </tr>
-                        <tr>
-                            <td>María González</td>
-                            <td>maria.gonzalez@email.com</td>
-                        </tr>
-                        <tr>
-                            <td>Carlos Rojas</td>
-                            <td>carlos.rojas@email.com</td>
-                        </tr>
+                    <tbody id="tbodyAlumnos">
+                        <tr><td colspan="2" style="text-align:center;color:#999;">Cargando...</td></tr>
                     </tbody>
                 </table>
             </section>
 
-            <!-- CLASES ASIGNADAS -->
+            <!-- CLASES ASIGNADAS (estático) -->
             <section class="card">
                 <h3>📚 Clases Asignadas</h3>
                 <ul>
@@ -80,7 +66,7 @@
                 </ul>
             </section>
 
-            <!-- HORARIOS -->
+            <!-- HORARIOS (estático) -->
             <section class="card">
                 <h3>🕒 Horarios del Coach</h3>
                 <ul>
@@ -97,6 +83,51 @@
     <footer class="footer">
         <p>&copy; 2026 SportClub – Tu mejor versión comienza hoy.</p>
     </footer>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        }
+
+        async function cargarAlumnos() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = './index.html'; return; }
+
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.role !== 'coach') { window.location.href = './index.html'; return; }
+
+            document.getElementById('saludoCoach').textContent =
+                `¡Bienvenido, ${user.full_name || 'Coach'}!`;
+
+            try {
+                const res  = await fetch(`${API_BASE}/api/users?role=user`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const alumnos = (data.data || []).filter(u => u.role === 'user');
+                const tbody   = document.getElementById('tbodyAlumnos');
+
+                if (!alumnos.length) {
+                    tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#999;">Sin alumnos registrados.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = alumnos.map(u => `
+                    <tr>
+                        <td>${u.full_name || '—'}</td>
+                        <td>${(u.email || '').toLowerCase()}</td>
+                    </tr>
+                `).join('');
+            } catch {
+                document.getElementById('tbodyAlumnos').innerHTML =
+                    '<tr><td colspan="2" style="text-align:center;color:#f87171;">Error al cargar alumnos.</td></tr>';
+            }
+        }
+
+        cargarAlumnos();
+    </script>
 
 </body>
 </html>

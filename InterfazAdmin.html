@@ -5,7 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SportClub | Panel Administrador</title>
     <link rel="stylesheet" href="colorAdmin.css">
-    <link href="" rel="stylesheet">
+    <style>
+        /* ---- Badges de rol ---- */
+        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+        .badge-admin { background:#ede9fe; color:#5b21b6; }
+        .badge-coach { background:#dbeafe; color:#1d4ed8; }
+        .badge-user  { background:#dcfce7; color:#15803d; }
+
+        /* ---- Modal overlay ---- */
+        #modalOverlay {
+            display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,.45); z-index:100;
+            justify-content:center; align-items:center;
+        }
+        #modalOverlay.activo { display:flex; }
+        #modalBox {
+            background:#fff; border-radius:14px; padding:30px;
+            width:100%; max-width:460px; box-shadow:0 20px 40px rgba(0,0,0,.2);
+            position:relative;
+        }
+        #modalBox h3 { color:#2E1A47; margin-bottom:20px; font-size:18px; }
+        .modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .modal-grid .full { grid-column:1/-1; }
+        .modal-grid label { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; display:block; }
+        .modal-grid input,
+        .modal-grid select {
+            width:100%; padding:9px 11px; border:1px solid #ddd;
+            border-radius:8px; font-size:13px; color:#333;
+        }
+        .modal-grid input.campo-error,
+        .modal-grid select.campo-error { border-color:#f87171; }
+        .msg-error {
+            color:#f87171; font-size:11px; margin-top:3px; display:none;
+        }
+        .msg-error.visible { display:block; }
+        .modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+        .btn-cancelar {
+            padding:9px 20px; border:1px solid #ccc; border-radius:8px;
+            background:#fff; cursor:pointer; font-size:13px;
+        }
+        .btn-guardar {
+            padding:9px 22px; border:none; border-radius:8px;
+            background:#2E1A47; color:#fff; cursor:pointer; font-weight:600; font-size:13px;
+        }
+        #alertaModal {
+            display:none; padding:9px 12px; border-radius:8px; font-size:12px;
+            margin-bottom:14px;
+        }
+        #alertaModal.error   { background:#fee2e2; color:#b91c1c; border:1px solid #f87171; }
+        #alertaModal.success { background:#d1fae5; color:#065f46; border:1px solid #34d399; }
+
+        /* ---- Toast notificación ---- */
+        #toast {
+            display:none; position:fixed; bottom:24px; right:24px;
+            background:#2E1A47; color:#fff; padding:12px 20px;
+            border-radius:10px; font-size:13px; z-index:200;
+            box-shadow:0 4px 12px rgba(0,0,0,.25);
+        }
+
+        /* ---- Botones tabla ---- */
+        .btn-editar-fila, .btn-eliminar-fila {
+            border:none; border-radius:6px; padding:5px 12px;
+            cursor:pointer; font-size:12px; font-weight:600;
+        }
+        .btn-editar-fila  { background:#3b82f6; color:#fff; margin-right:5px; }
+        .btn-eliminar-fila { background:#ef4444; color:#fff; }
+
+        /* ---- Btn nuevo usuario ---- */
+        #btnNuevoUsuario {
+            float:right; margin-bottom:15px;
+            background:#2E1A47; color:#fff;
+            border:none; border-radius:8px; padding:9px 18px;
+            font-weight:600; cursor:pointer; font-size:13px;
+        }
+        .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+        .section-desc { font-size:13px; color:#666; margin-top:-5px; margin-bottom:15px; }
+    </style>
 </head>
 <body>
 
@@ -16,8 +91,9 @@
             <h1>SportClub - Administrador</h1>
         </div>
         <div class="header-actions">
-            <button class="btn editar">Editar Perfil</button>
-            <a href="./index.html" class="btn cerrar">Cerrar Sesión</a>
+            <span id="nombreAdmin" style="color:#F2B705; font-weight:600; font-size:14px;"></span>
+            <button class="btn editar" onclick="irAPerfil()">Editar Perfil</button>
+            <a href="./index.html" class="btn cerrar" onclick="cerrarSesion()">Cerrar Sesión</a>
         </div>
     </header>
 
@@ -25,57 +101,42 @@
     <nav class="navbar">
         <ul>
             <li><a href="#" class="active">Usuarios</a></li>
-            <li><a href="#">Reportes</a></li>
-            <li><a href="#">Configuración</a></li>
         </ul>
     </nav>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <main class="main-content">
 
-        <!-- PANEL DE CONTROL -->
-        <section class="cards">
-            <div class="card">
-                <h3>Usuarios Activos</h3>
-                <p>120</p>
-            </div>
-            <div class="card">
-                <h3>Total de Clases</h3>
-                <p>35</p>
-            </div>
-            <div class="card">
-                <h3>Coaches Registrados</h3>
-                <p>8</p>
-            </div>
+        <!-- Cards resumen -->
+        <section class="cards" id="cardsResumen">
+            <div class="card"><h3>Usuarios Activos</h3><p id="totalUsuarios">—</p></div>
+            <div class="card"><h3>Coaches</h3><p id="totalCoaches">—</p></div>
+            <div class="card"><h3>Administradores</h3><p id="totalAdmins">—</p></div>
         </section>
 
-        <!-- GESTIÓN DE USUARIOS -->
+        <!-- Gestión de Usuarios -->
         <section class="user-management">
-            <h2>Gestión de Usuarios</h2>
-            <table>
+            <div class="section-header">
+                <div>
+                    <h2>Gestión de Usuarios</h2>
+                    <p class="section-desc">Administra los usuarios del sistema</p>
+                </div>
+                <button id="btnNuevoUsuario" onclick="abrirModalNuevo()">+ Nuevo Usuario</button>
+            </div>
+
+            <table id="tablaUsuarios">
                 <thead>
                     <tr>
-                        <th>Nombre</th>
-                        <th>Correo</th>
+                        <th>ID</th>
+                        <th>Nombre Completo</th>
+                        <th>Email</th>
                         <th>Rol</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>Juan Pérez</td>
-                        <td>juan@example.com</td>
-                        <td>Usuario</td>
-                    </tr>
-                    <tr>
-                        <td>María González</td>
-                        <td>maria@example.com</td>
-                        <td>Coach</td>
-                    </tr>
-                    <tr>
-                        <td>Carlos Rojas</td>
-                        <td>carlos@example.com</td>
-                        <td>Administrador</td>
-                    </tr>
+                <tbody id="tbodyUsuarios">
+                    <tr><td colspan="6" style="text-align:center;padding:20px;color:#999;">Cargando...</td></tr>
                 </tbody>
             </table>
         </section>
@@ -86,6 +147,276 @@
     <footer class="footer">
         <p>&copy; 2026 SportClub. Todos los derechos reservados.</p>
     </footer>
+
+    <!-- MODAL -->
+    <div id="modalOverlay">
+        <div id="modalBox">
+            <h3 id="modalTitulo">Nuevo Usuario</h3>
+            <div id="alertaModal"></div>
+            <div class="modal-grid">
+                <div class="full">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="mNombre" placeholder="Ej: Juan Pérez">
+                    <span class="msg-error" id="errMNombre">El nombre es obligatorio.</span>
+                </div>
+                <div>
+                    <label>Email *</label>
+                    <input type="email" id="mEmail" placeholder="correo@demo.cl">
+                    <span class="msg-error" id="errMEmail">Email inválido.</span>
+                </div>
+                <div>
+                    <label>Rol</label>
+                    <select id="mRol">
+                        <option value="user">user</option>
+                        <option value="coach">coach</option>
+                        <option value="admin">admin</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Contraseña *</label>
+                    <input type="password" id="mPassword" placeholder="Mínimo 8 caracteres">
+                    <span class="msg-error" id="errMPass">Mínimo 8 caracteres.</span>
+                </div>
+                <div>
+                    <label>Confirmar Contraseña *</label>
+                    <input type="password" id="mConfirmPass" placeholder="Repetir contraseña">
+                    <span class="msg-error" id="errMConfirm">Las contraseñas no coinciden.</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn-guardar" onclick="guardarUsuario()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+    <script>
+        const API_BASE  = 'http://localhost:3000';
+        let editandoId  = null;
+
+        // ── Auth guard ──────────────────────────────────────────
+        function getToken() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = './index.html'; return null; }
+            return token;
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        }
+
+        function irAPerfil() {
+            window.location.href = './InterfazUsuario.html';
+        }
+
+        // ── UI helpers ──────────────────────────────────────────
+        function mostrarToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent   = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2500);
+        }
+
+        function formatearFecha(str) {
+            if (!str) return '—';
+            const d = new Date(str);
+            if (isNaN(d)) return str;
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+        }
+
+        function badgeRol(rol) {
+            const cls = { admin:'badge-admin', coach:'badge-coach', user:'badge-user' }[rol] || 'badge-user';
+            return `<span class="badge ${cls}">${rol}</span>`;
+        }
+
+        // ── Cargar usuarios ─────────────────────────────────────
+        async function cargarUsuarios() {
+            const token = getToken(); if (!token) return;
+            try {
+                const res  = await fetch(`${API_BASE}/api/users`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!res.ok) { mostrarToast('Error al cargar usuarios.'); return; }
+
+                const usuarios = data.data || [];
+                renderizarTabla(usuarios);
+                actualizarCards(usuarios);
+            } catch {
+                mostrarToast('No se pudo conectar con el servidor.');
+            }
+        }
+
+        function renderizarTabla(usuarios) {
+            const tbody = document.getElementById('tbodyUsuarios');
+            if (!usuarios.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999;">Sin usuarios registrados.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = usuarios.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.full_name || '—'}</td>
+                    <td>${(u.email || '').toLowerCase()}</td>
+                    <td>${badgeRol(u.role)}</td>
+                    <td>${formatearFecha(u.createdAt || u.fecha_nacimiento)}</td>
+                    <td>
+                        <button class="btn-editar-fila"  onclick="abrirModalEditar(${u.id})">✏️ Editar</button>
+                        <button class="btn-eliminar-fila" onclick="eliminarUsuario(${u.id})">🗑️ Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function actualizarCards(usuarios) {
+            document.getElementById('totalUsuarios').textContent = usuarios.filter(u => u.role === 'user').length;
+            document.getElementById('totalCoaches').textContent  = usuarios.filter(u => u.role === 'coach').length;
+            document.getElementById('totalAdmins').textContent   = usuarios.filter(u => u.role === 'admin').length;
+        }
+
+        // ── Modal ───────────────────────────────────────────────
+        function abrirModalNuevo() {
+            editandoId = null;
+            document.getElementById('modalTitulo').textContent = '+ Nuevo Usuario';
+            ['mNombre','mEmail','mPassword','mConfirmPass'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('mRol').value = 'user';
+            document.getElementById('mPassword').required     = true;
+            document.getElementById('mConfirmPass').required  = true;
+            limpiarErroresModal();
+            document.getElementById('modalOverlay').classList.add('activo');
+        }
+
+        async function abrirModalEditar(id) {
+            const token = getToken(); if (!token) return;
+            editandoId = id;
+            document.getElementById('modalTitulo').textContent = '✏️ Editar Usuario';
+            limpiarErroresModal();
+
+            try {
+                const res  = await fetch(`${API_BASE}/api/users/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const u    = data.data || {};
+                document.getElementById('mNombre').value = u.full_name || '';
+                document.getElementById('mEmail').value  = u.email     || '';
+                document.getElementById('mRol').value    = u.role      || 'user';
+                document.getElementById('mPassword').value     = '';
+                document.getElementById('mConfirmPass').value  = '';
+            } catch { mostrarToast('No se pudo cargar el usuario.'); return; }
+
+            document.getElementById('modalOverlay').classList.add('activo');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalOverlay').classList.remove('activo');
+        }
+
+        function limpiarErroresModal() {
+            document.querySelectorAll('.msg-error').forEach(el => el.classList.remove('visible'));
+            document.querySelectorAll('.modal-grid input, .modal-grid select').forEach(el => el.classList.remove('campo-error'));
+            const al = document.getElementById('alertaModal');
+            al.style.display = 'none'; al.className = '';
+        }
+
+        function mostrarAlertaModal(msg, tipo) {
+            const el = document.getElementById('alertaModal');
+            el.textContent   = msg;
+            el.className     = tipo;
+            el.style.display = 'block';
+        }
+
+        async function guardarUsuario() {
+            limpiarErroresModal();
+            const nombre      = document.getElementById('mNombre').value.trim();
+            const email       = document.getElementById('mEmail').value.trim();
+            const rol         = document.getElementById('mRol').value;
+            const password    = document.getElementById('mPassword').value;
+            const confirmPass = document.getElementById('mConfirmPass').value;
+            let valido = true;
+
+            if (!nombre) {
+                document.getElementById('mNombre').classList.add('campo-error');
+                document.getElementById('errMNombre').classList.add('visible');
+                valido = false;
+            }
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                document.getElementById('mEmail').classList.add('campo-error');
+                document.getElementById('errMEmail').classList.add('visible');
+                valido = false;
+            }
+            if (!editandoId) {
+                if (!password || password.length < 8) {
+                    document.getElementById('mPassword').classList.add('campo-error');
+                    document.getElementById('errMPass').classList.add('visible');
+                    valido = false;
+                }
+                if (password !== confirmPass) {
+                    document.getElementById('mConfirmPass').classList.add('campo-error');
+                    document.getElementById('errMConfirm').classList.add('visible');
+                    valido = false;
+                }
+            }
+            if (!valido) return;
+
+            const token = getToken(); if (!token) return;
+            const body  = { full_name: nombre, email, role: rol };
+            if (!editandoId || password) body.password = password;
+
+            const url    = editandoId ? `${API_BASE}/api/users/${editandoId}` : `${API_BASE}/api/users`;
+            const method = editandoId ? 'PUT' : 'POST';
+
+            try {
+                const res  = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+                    body:    JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    mostrarAlertaModal(data.message || 'Error al guardar.', 'error');
+                    return;
+                }
+                cerrarModal();
+                mostrarToast(editandoId ? 'Usuario actualizado.' : 'Usuario creado.');
+                cargarUsuarios();
+            } catch {
+                mostrarAlertaModal('No se pudo conectar con el servidor.', 'error');
+            }
+        }
+
+        // ── Eliminar ────────────────────────────────────────────
+        async function eliminarUsuario(id) {
+            if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
+            const token = getToken(); if (!token) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/users/${id}`, {
+                    method:  'DELETE',
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    mostrarToast('Usuario eliminado.');
+                    cargarUsuarios();
+                } else {
+                    mostrarToast('No se pudo eliminar el usuario.');
+                }
+            } catch {
+                mostrarToast('Error de conexión.');
+            }
+        }
+
+        // ── Init ─────────────────────────────────────────────────
+        (function init() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.role !== 'admin') { window.location.href = './index.html'; return; }
+            document.getElementById('nombreAdmin').textContent = user.full_name || user.email || '';
+            cargarUsuarios();
+        })();
+    </script>
 
 </body>
 </html>
