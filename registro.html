@@ -5,33 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SportClub - Registro</title>
     <link rel="stylesheet" href="registro.css">
+    <style>
+        .campo-error { border-color: #f87171 !important; }
+        .msg-error {
+            color: #f87171;
+            font-size: 11px;
+            margin-top: -14px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        .msg-error.visible { display: block; }
+        #alertaGlobal {
+            display: none;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        #alertaGlobal.error   { background:#fee2e2; border:1px solid #f87171; color:#b91c1c; }
+        #alertaGlobal.success { background:#d1fae5; border:1px solid #34d399; color:#065f46; }
+    </style>
 </head>
 <body>
 
     <div class="caja">
         <img id="imagen-logo" src="./logo_empresa_letra_v1.png" alt="SportClub">
-        
+
+        <div id="alertaGlobal"></div>
+
         <label>Nombre Completo</label>
-        <input type="text" placeholder="Tu nombre">
+        <input type="text" id="fullName" placeholder="Tu nombre completo">
+        <span class="msg-error" id="errNombre">El nombre es obligatorio.</span>
 
         <label>Correo Electrónico</label>
-        <input type="email" placeholder="ejemplo@correo.com">
-        
+        <input type="email" id="email" placeholder="ejemplo@correo.com">
+        <span class="msg-error" id="errEmail">Ingresa un correo válido.</span>
+
         <label>Contraseña</label>
-        <input type="password" placeholder="Crea una contraseña">
+        <input type="password" id="password" placeholder="Mínimo 8 caracteres">
+        <span class="msg-error" id="errPass">La contraseña debe tener mínimo 8 caracteres.</span>
+
+        <label>Confirmar Contraseña</label>
+        <input type="password" id="confirmPass" placeholder="Repite tu contraseña">
+        <span class="msg-error" id="errConfirm">Las contraseñas no coinciden.</span>
 
         <label>Deporte Favorito</label>
-        <input type="text" placeholder="Ej: Fútbol, Natación...">
+        <input type="text" id="deporte" placeholder="Ej: Fútbol, Natación...">
 
-        <label>Nivel de Experiencia</label>
-        <input type="text" placeholder="Principiante / Intermedio / Avanzado">
-        
         <button id="boton-inicio">REGISTRARSE</button>
-        
+
         <div class="links">
             <a href="./index.html">¿Ya tienes cuenta? Inicia sesión</a>
         </div>
     </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        function limpiarErrores() {
+            document.querySelectorAll('.msg-error').forEach(el => el.classList.remove('visible'));
+            document.querySelectorAll('input').forEach(el => el.classList.remove('campo-error'));
+        }
+
+        function mostrarCampoError(inputId, msgId) {
+            const input = document.getElementById(inputId);
+            const msg   = document.getElementById(msgId);
+            input.classList.add('campo-error');
+            msg.classList.add('visible');
+        }
+
+        function mostrarAlerta(texto, tipo) {
+            const el = document.getElementById('alertaGlobal');
+            el.textContent = texto;
+            el.className   = tipo;
+            el.style.display = 'block';
+        }
+
+        function ocultarAlerta() {
+            document.getElementById('alertaGlobal').style.display = 'none';
+        }
+
+        document.getElementById('boton-inicio').addEventListener('click', async function() {
+            limpiarErrores();
+            ocultarAlerta();
+
+            const fullName    = document.getElementById('fullName').value.trim();
+            const email       = document.getElementById('email').value.trim();
+            const password    = document.getElementById('password').value;
+            const confirmPass = document.getElementById('confirmPass').value;
+            const deporte     = document.getElementById('deporte').value.trim();
+
+            let valido = true;
+
+            if (!fullName) {
+                mostrarCampoError('fullName', 'errNombre');
+                valido = false;
+            }
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                mostrarCampoError('email', 'errEmail');
+                valido = false;
+            }
+            if (!password || password.length < 8) {
+                mostrarCampoError('password', 'errPass');
+                valido = false;
+            }
+            if (password !== confirmPass) {
+                mostrarCampoError('confirmPass', 'errConfirm');
+                valido = false;
+            }
+            if (!valido) return;
+
+            const btn = document.getElementById('boton-inicio');
+            btn.textContent = 'Registrando...';
+            btn.disabled    = true;
+
+            try {
+                const body = {
+                    full_name: fullName,
+                    email,
+                    password,
+                    metadata: { sports: deporte ? [{ name: deporte }] : [] }
+                };
+
+                const response = await fetch(`${API_BASE}/api/auth/register`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify(body)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.ok) {
+                    mostrarAlerta(result.message || 'Error al registrar usuario.', 'error');
+                    return;
+                }
+
+                mostrarAlerta('¡Cuenta creada exitosamente! Redirigiendo...', 'success');
+                setTimeout(() => window.location.href = './index.html', 1800);
+
+            } catch (err) {
+                mostrarAlerta('No se pudo conectar con el servidor.', 'error');
+            } finally {
+                btn.textContent = 'REGISTRARSE';
+                btn.disabled    = false;
+            }
+        });
+    </script>
 
 </body>
 </html>

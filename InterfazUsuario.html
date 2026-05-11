@@ -3,8 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SportClub - Dashboard Usuario</title>
+    <title>SportClub - Mi Perfil</title>
     <link rel="stylesheet" href="colorUsuario.css">
+    <style>
+        /* ---- Badge rol ---- */
+        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+        .badge-admin { background:#ede9fe; color:#5b21b6; }
+        .badge-coach { background:#dbeafe; color:#1d4ed8; }
+        .badge-user  { background:#dcfce7; color:#15803d; }
+
+        /* ---- Layout perfil ---- */
+        .perfil-wrapper {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        @media (max-width:700px) { .perfil-wrapper { grid-template-columns:1fr; } }
+
+        /* ---- Card lateral ---- */
+        .card-lateral {
+            background: #fff;
+            border-radius: 14px;
+            padding: 28px 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,.08);
+            text-align: center;
+            border-top: 5px solid #3b82f6;
+            height: fit-content;
+        }
+        .avatar {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg,#2E1A47,#3b82f6);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: #fff; margin: 0 auto 14px;
+        }
+        .card-lateral h3 { color: #2E1A47; font-size: 17px; margin-bottom: 4px; }
+        .card-lateral p  { color: #666; font-size: 13px; margin-bottom: 14px; }
+        .info-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: #444; margin: 8px 0; text-align: left;
+        }
+        .info-item span.icono { font-size: 15px; }
+
+        /* ---- Columna derecha ---- */
+        .card-form {
+            background: #fff;
+            border-radius: 14px;
+            padding: 28px 24px;
+            box-shadow: 0 4px 14px rgba(0,0,0,.08);
+            border-top: 5px solid #3b82f6;
+            margin-bottom: 20px;
+        }
+        .card-form h3 { color: #2E1A47; font-size: 16px; margin-bottom: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width:520px) { .form-grid { grid-template-columns:1fr; } }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full { grid-column: 1/-1; }
+        .form-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
+        .form-group input, .form-group textarea {
+            padding: 9px 11px; border: 1px solid #ddd; border-radius: 8px;
+            font-size: 13px; color: #333; font-family: inherit;
+        }
+        .form-group input:disabled { background: #f3f4f6; color: #999; cursor: not-allowed; }
+        .form-group input.campo-error { border-color: #f87171; }
+        .msg-error { color: #f87171; font-size: 11px; margin-top: 3px; display: none; }
+        .msg-error.visible { display: block; }
+
+        .btn-editar-perfil {
+            background: #3b82f6; color: #fff; border: none;
+            border-radius: 8px; padding: 9px 20px; cursor: pointer;
+            font-weight: 600; font-size: 13px; float: right;
+        }
+        .btn-guardar {
+            background: #16a34a; color: #fff; border: none;
+            border-radius: 8px; padding: 9px 20px; cursor: pointer;
+            font-weight: 600; font-size: 13px;
+        }
+        .btn-cancelar {
+            background: #fff; color: #666; border: 1px solid #ccc;
+            border-radius: 8px; padding: 9px 16px; cursor: pointer; font-size: 13px;
+        }
+        .acciones-form { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+        #alertaPerfil, #alertaPass {
+            display:none; padding:9px 12px; border-radius:8px;
+            font-size:12px; margin-bottom:12px;
+        }
+        #alertaPerfil.success, #alertaPass.success {
+            background:#d1fae5; color:#065f46; border:1px solid #34d399;
+        }
+        #alertaPerfil.error, #alertaPass.error {
+            background:#fee2e2; color:#b91c1c; border:1px solid #f87171;
+        }
+
+        /* Ocultar formulario de edición inicialmente */
+        #formEdicion { display: none; }
+    </style>
 </head>
 <body>
 
@@ -14,13 +110,12 @@
             <div class="logo-container">
                 <img src="./logo_empresa_letra_v1.png" alt="Logo SportClub" class="logo">
                 <div class="titulo-header">
-                    <h1>Panel del Usuario</h1>
-                    <p>Gestiona tus reservas y tu información personal</p>
+                    <h1>Mi Perfil</h1>
+                    <p>Gestiona tu información personal</p>
                 </div>
             </div>
             <div class="acciones">
-                <button class="btn-editar">Editar Perfil</button>
-                <a href="./index.html" class="btn-cerrar">Cerrar Sesión</a>
+                <a href="./index.html" class="btn-cerrar" onclick="cerrarSesion()">Cerrar Sesión</a>
             </div>
         </div>
     </header>
@@ -28,59 +123,289 @@
     <!-- NAVEGACIÓN -->
     <nav class="nav">
         <ul class="nav-list">
-            <li><a href="#" class="activo">🏠 Inicio</a></li>
-            <li><a href="#">📅 Reservas</a></li>
-            <li><a href="#">👤 Perfil</a></li>
+            <li><a href="#" class="activo">👤 Perfil</a></li>
         </ul>
     </nav>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="container">
-        <!-- BIENVENIDA -->
-        <section class="bienvenida">
-            <h2>¡Bienvenido, Usuario!</h2>
-            <p>
-                En <strong>SportClub</strong>, tu bienestar es nuestra prioridad. 
-                Aquí puedes gestionar tus reservas y explorar nuevas clases para seguir construyendo tu mejor versión.
-            </p>
+    <!-- CONTENIDO -->
+    <div class="perfil-wrapper">
+
+        <!-- Columna lateral -->
+        <aside>
+            <div class="card-lateral">
+                <div class="avatar" id="avatarInicial">?</div>
+                <h3 id="nombreMostrar">—</h3>
+                <p>Usuario del Sistema</p>
+                <span id="badgeRol" class="badge badge-user">user</span>
+                <hr style="margin:16px 0; border-color:#f0f0f0;">
+                <div class="info-item"><span class="icono">✉️</span><span id="emailMostrar">—</span></div>
+                <div class="info-item"><span class="icono">📅</span><span id="fechaMostrar">—</span></div>
+                <div class="info-item"><span class="icono">🎂</span><span id="nacimientoMostrar">—</span></div>
+            </div>
+        </aside>
+
+        <!-- Columna formularios -->
+        <section>
+
+            <!-- Vista de datos -->
+            <div class="card-form" id="vistaInfo">
+                <h3>
+                    ℹ️ Información Personal
+                    <button class="btn-editar-perfil" onclick="mostrarFormEdicion()">✏️ Editar Perfil</button>
+                </h3>
+                <div style="clear:both;"></div>
+                <div id="alertaPerfil"></div>
+                <p style="color:#666;font-size:13px;">Haz clic en <strong>Editar Perfil</strong> para modificar tus datos.</p>
+            </div>
+
+            <!-- Formulario edición -->
+            <div class="card-form" id="formEdicion">
+                <h3>✏️ Editar Información Personal</h3>
+                <div id="alertaPerfilForm"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nombre Completo *</label>
+                        <input type="text" id="editNombre">
+                        <span class="msg-error" id="errEditNombre">El nombre es obligatorio.</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Email (no editable)</label>
+                        <input type="email" id="editEmail" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" id="editNacimiento">
+                    </div>
+                    <div class="form-group">
+                        <label>Rol (no editable)</label>
+                        <input type="text" id="editRol" disabled>
+                    </div>
+                    <div class="form-group full">
+                        <label>Intereses / Metadata</label>
+                        <textarea id="editMetadata" rows="3" style="resize:vertical;padding:9px 11px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;" placeholder="Ej: Me interesa el entrenamiento funcional..."></textarea>
+                    </div>
+                </div>
+                <div class="acciones-form">
+                    <button class="btn-cancelar" onclick="ocultarFormEdicion()">Cancelar</button>
+                    <button class="btn-guardar" onclick="guardarPerfil()">✔ Guardar cambios</button>
+                </div>
+            </div>
+
+            <!-- Cambiar contraseña -->
+            <div class="card-form">
+                <h3>🔒 Cambiar Contraseña</h3>
+                <div id="alertaPass"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Contraseña Actual *</label>
+                        <input type="password" id="passActual" placeholder="Tu contraseña actual">
+                        <span class="msg-error" id="errPassActual">Campo obligatorio.</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Nueva Contraseña *</label>
+                        <input type="password" id="passNueva" placeholder="Mínimo 8 caracteres">
+                        <span class="msg-error" id="errPassNueva">Mínimo 8 caracteres.</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Nueva Contraseña *</label>
+                        <input type="password" id="passConfirm" placeholder="Repetir nueva contraseña">
+                        <span class="msg-error" id="errPassConfirm">Las contraseñas no coinciden.</span>
+                    </div>
+                </div>
+                <p style="font-size:12px;color:#888;margin-top:10px;">ℹ️ La contraseña debe tener al menos 8 caracteres.</p>
+                <div class="acciones-form">
+                    <button class="btn-guardar" onclick="cambiarPassword()">🔒 Actualizar contraseña</button>
+                </div>
+            </div>
+
         </section>
-
-        <div class="cards-container">
-            <!-- INFORMACIÓN DEL USUARIO -->
-            <section class="card">
-                <h3>👤 Información Personal</h3>
-                <p><strong>Nombre:</strong> Ana Martínez</p>
-                <p><strong>Correo:</strong> ana.martinez@email.com</p>
-                <p><strong>Interés:</strong> Entrenamiento Funcional</p>
-            </section>
-
-            <!-- RESERVAS -->
-            <section class="card">
-                <h3>📅 Mis Reservas</h3>
-                <ul>
-                    <li>Clase de Crossfit – Lunes 18:00</li>
-                    <li>Yoga – Miércoles 19:00</li>
-                    <li>Spinning – Viernes 17:00</li>
-                </ul>
-            </section>
-
-            <!-- CLASES DISPONIBLES -->
-            <section class="card">
-                <h3>🏋️ Clases Disponibles</h3>
-                <ul>
-                    <li>Yoga</li>
-                    <li>Entrenamiento Funcional</li>
-                    <li>Spinning</li>
-                    <li>Pilates</li>
-                </ul>
-            </section>
-        </div>
-    </main>
+    </div>
 
     <!-- FOOTER -->
     <footer class="footer">
         <p>&copy; 2026 SportClub – Tu mejor versión comienza hoy.</p>
     </footer>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        function getToken() {
+            const t = localStorage.getItem('token');
+            if (!t) { window.location.href = './index.html'; return null; }
+            return t;
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        }
+
+        function formatFecha(str) {
+            if (!str) return '—';
+            const d = new Date(str);
+            if (isNaN(d)) return str;
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+        }
+
+        function badgeRolHTML(rol) {
+            const cls = { admin:'badge-admin', coach:'badge-coach', user:'badge-user' }[rol] || 'badge-user';
+            return `<span class="badge ${cls}">${rol}</span>`;
+        }
+
+        function rellenarLateral(u) {
+            const inicial = (u.full_name || u.email || '?')[0].toUpperCase();
+            document.getElementById('avatarInicial').textContent  = inicial;
+            document.getElementById('nombreMostrar').textContent  = u.full_name  || '—';
+            document.getElementById('emailMostrar').textContent   = (u.email || '').toLowerCase();
+            document.getElementById('fechaMostrar').textContent   = formatFecha(u.createdAt);
+            document.getElementById('nacimientoMostrar').textContent = formatFecha(u.fecha_nacimiento || u.birth_date);
+            document.getElementById('badgeRol').outerHTML = badgeRolHTML(u.role);
+        }
+
+        function mostrarFormEdicion() {
+            document.getElementById('vistaInfo').style.display   = 'none';
+            document.getElementById('formEdicion').style.display = 'block';
+        }
+
+        function ocultarFormEdicion() {
+            document.getElementById('formEdicion').style.display = 'none';
+            document.getElementById('vistaInfo').style.display   = 'block';
+        }
+
+        function mostrarAlerta(elId, msg, tipo) {
+            const el = document.getElementById(elId);
+            el.textContent   = msg;
+            el.className     = tipo;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        // ── Cargar perfil ───────────────────────────────────────
+        async function cargarPerfil() {
+            const token = getToken(); if (!token) return;
+            try {
+                const res  = await fetch(`${API_BASE}/api/auth/me`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!res.ok) { window.location.href = './index.html'; return; }
+
+                const u = data.data || {};
+                localStorage.setItem('user', JSON.stringify(u));
+                rellenarLateral(u);
+
+                // Prellenar form edición
+                document.getElementById('editNombre').value    = u.full_name || '';
+                document.getElementById('editEmail').value     = u.email     || '';
+                document.getElementById('editRol').value       = u.role      || '';
+                document.getElementById('editNacimiento').value = u.fecha_nacimiento
+                    ? u.fecha_nacimiento.split('T')[0]
+                    : (u.birth_date || '');
+
+                let meta = '';
+                try {
+                    const otros = typeof u.otros === 'string' ? JSON.parse(u.otros) : (u.otros || u.metadata || {});
+                    if (otros.deporte) meta = `Deporte: ${otros.deporte}`;
+                    else if (typeof otros === 'object') meta = JSON.stringify(otros, null, 2);
+                } catch { meta = ''; }
+                document.getElementById('editMetadata').value = meta;
+
+            } catch {
+                window.location.href = './index.html';
+            }
+        }
+
+        // ── Guardar perfil ──────────────────────────────────────
+        async function guardarPerfil() {
+            document.querySelectorAll('#formEdicion .msg-error').forEach(e => e.classList.remove('visible'));
+            document.querySelectorAll('#formEdicion input').forEach(e => e.classList.remove('campo-error'));
+
+            const nombre    = document.getElementById('editNombre').value.trim();
+            const nacim     = document.getElementById('editNacimiento').value;
+            const metadata  = document.getElementById('editMetadata').value.trim();
+
+            if (!nombre) {
+                document.getElementById('editNombre').classList.add('campo-error');
+                document.getElementById('errEditNombre').classList.add('visible');
+                return;
+            }
+
+            const token = getToken(); if (!token) return;
+            const body  = { full_name: nombre };
+            if (nacim)    body.fecha_nacimiento = nacim;
+            if (metadata) {
+                try { body.otros = JSON.parse(metadata); }
+                catch { body.otros = { info: metadata }; }
+            }
+
+            try {
+                const res  = await fetch(`${API_BASE}/api/auth/me`, {
+                    method:  'PUT',
+                    headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+                    body:    JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    mostrarAlerta('alertaPerfilForm', data.message || 'Error al guardar.', 'error');
+                    return;
+                }
+                mostrarAlerta('alertaPerfilForm', 'Perfil actualizado correctamente.', 'success');
+                ocultarFormEdicion();
+                cargarPerfil();
+            } catch {
+                mostrarAlerta('alertaPerfilForm', 'Error de conexión.', 'error');
+            }
+        }
+
+        // ── Cambiar contraseña ──────────────────────────────────
+        async function cambiarPassword() {
+            document.querySelectorAll('[id^="errPass"]').forEach(e => e.classList.remove('visible'));
+            document.querySelectorAll('#passActual,#passNueva,#passConfirm').forEach(e => e.classList.remove('campo-error'));
+
+            const actual   = document.getElementById('passActual').value;
+            const nueva    = document.getElementById('passNueva').value;
+            const confirmar = document.getElementById('passConfirm').value;
+            let valido = true;
+
+            if (!actual) {
+                document.getElementById('passActual').classList.add('campo-error');
+                document.getElementById('errPassActual').classList.add('visible');
+                valido = false;
+            }
+            if (!nueva || nueva.length < 8) {
+                document.getElementById('passNueva').classList.add('campo-error');
+                document.getElementById('errPassNueva').classList.add('visible');
+                valido = false;
+            }
+            if (nueva !== confirmar) {
+                document.getElementById('passConfirm').classList.add('campo-error');
+                document.getElementById('errPassConfirm').classList.add('visible');
+                valido = false;
+            }
+            if (!valido) return;
+
+            const token = getToken(); if (!token) return;
+            try {
+                const res  = await fetch(`${API_BASE}/api/auth/me/password`, {
+                    method:  'PUT',
+                    headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+                    body:    JSON.stringify({ current_password: actual, new_password: nueva })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    mostrarAlerta('alertaPass', data.message || 'Error al cambiar contraseña.', 'error');
+                    return;
+                }
+                ['passActual','passNueva','passConfirm'].forEach(id => document.getElementById(id).value = '');
+                mostrarAlerta('alertaPass', 'Contraseña actualizada correctamente.', 'success');
+            } catch {
+                mostrarAlerta('alertaPass', 'Error de conexión.', 'error');
+            }
+        }
+
+        // ── Init ─────────────────────────────────────────────────
+        cargarPerfil();
+    </script>
 
 </body>
 </html>
